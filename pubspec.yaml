@@ -27,4 +27,4 @@ flutter:
   fonts:
     - family: Caveat
       fonts:
-        - assets/Caveat-Regular.ttf  
+        - asset: assets/Caveat-Regular.ttf  
