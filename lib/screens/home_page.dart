@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -57,11 +59,75 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> fetchTasksFromFirestore() async {
+    //Get a reference to the 'tasks' collection from Firestore
+    CollectionReference tasksCollection = db.collection('tasks');
+
+    //Fetch the documents (tasks) from the collection
+    QuerySnapshot querySnapshot = await tasksCollection.get();
+
+    //Create an empty list to store the fetched task names
+    List<String> fetchedTasks = [];
+
+    //Look through each doc (task) in the querySnapshot object
+    for (QueryDocumentSnapshot docSnapshot in querySnapshot.docs) {
+      //Get the task name from the data
+      String taskName = docSnapshot.get('name');
+
+      //Get the completion status from the data
+      bool completed = docSnapshot.get('completed');
+
+      //Add the tasks to the fetched tasks
+      fetchedTasks.add(taskName);
+    }
+    setState(() {
+      tasks.clear();
+      tasks.addAll(fetchedTasks);
+    });
+  }
+
+  Future<void> updateTaskCompletionStatus(
+      String taskName, bool completed) async {
+    //Get a reference to the 'tasks' collection from Firestore
+    CollectionReference tasksCollection = db.collection('tasks');
+
+    //Query firestore for tasks with the given task name
+    QuerySnapshot querySnapshot =
+        await tasksCollection.where('name', isEqualTo: taskName).get();
+
+    //if matching documents is found
+    if (querySnapshot.size > 0) {
+      //Getting a reference to the first matching document
+      DocumentSnapshot documentSnapshot = querySnapshot.docs[0];
+
+      await documentSnapshot.reference.update({'completed': completed});
+    }
+    setState(() {
+      //find the index of the task in the task list
+      int taskIndex = tasks.indexWhere((task) => task == taskName);
+
+      //Update the corresponding checkbox value in the cleckbox list
+      checkboxes[taskIndex] = completed;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTasksFromFirestore();
+  }
+
+  void clearInput() {
+    setState(() {
+      nameController.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(202, 55, 175, 0),
+        backgroundColor: Color.fromARGB(255, 71, 194, 0),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -74,7 +140,7 @@ class _HomePageState extends State<HomePage> {
               style: TextStyle(
                   fontFamily: 'Caveat',
                   fontSize: 32,
-                  color: Color.fromARGB(255, 191, 255, 0)),
+                  color: Color.fromARGB(255, 170, 255, 0)),
             ),
           ],
         ),
@@ -100,8 +166,8 @@ class _HomePageState extends State<HomePage> {
                       margin: const EdgeInsets.only(top: 3.0),
                       decoration: BoxDecoration(
                         color: checkboxes[index]
-                            ? Colors.green.withOpacity(0.7)
-                            : Colors.blue.withOpacity(0.7),
+                            ? Color.fromARGB(255, 0, 76, 255).withOpacity(0.7)
+                            : Color.fromARGB(255, 17, 255, 0).withOpacity(0.7),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Padding(
@@ -139,14 +205,17 @@ class _HomePageState extends State<HomePage> {
                                         setState(() {
                                           checkboxes[index] = newValue!;
                                         });
-                                        //To-Do: updateTaskCompletionStatus()
+                                        updateTaskCompletionStatus(
+                                            tasks[index], newValue!);
                                       }),
                                 ),
-                                const IconButton(
+                                IconButton(
                                   color: Colors.black,
                                   iconSize: 30,
                                   icon: Icon(Icons.delete),
-                                  onPressed: null,
+                                  onPressed: () {
+                                    removeItems(index);
+                                  },
                                 ),
                               ],
                             ),
@@ -183,7 +252,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-                  const IconButton(
+                  IconButton(
                     icon: Icon(Icons.clear),
                     onPressed: null,
                     //To-Do clearTextField()
@@ -195,9 +264,11 @@ class _HomePageState extends State<HomePage> {
                 child: ElevatedButton(
                   onPressed: () {
                     addItemToList();
+                    clearInput();
                   },
                   style: ButtonStyle(
-                    backgroundColor: WidgetStatePropertyAll(Colors.blue),
+                    backgroundColor:
+                        WidgetStatePropertyAll(Color.fromARGB(255, 70, 238, 9)),
                   ),
                   child: Text(
                     'Add To-Do List Item',
