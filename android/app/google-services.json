@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "163653737979",
-    "project_id": "rdp-to-do-list-bdb17",
-    "storage_bucket": "rdp-to-do-list-bdb17.appspot.com"
+    "project_number": "855204407087",
+    "project_id": "rdp-todolist-584c1",
+    "storage_bucket": "rdp-todolist-584c1.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:163653737979:android:2bc8029c6758dd60447f5e",
+        "mobilesdk_app_id": "1:855204407087:android:1e76f240764f99bfc5a3da",
         "android_client_info": {
-          "package_name": "com.todolist.app"
+          "package_name": "com.todo.app"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDD0arLUU2JxLJSIs3sxWcEDVsyrEbvbDg"
+          "current_key": "AIzaSyDMVouSNgn9xZNpLf6vFIdxgqFEXhO5aPY"
         }
       ],
       "services": {
