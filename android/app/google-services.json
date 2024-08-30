@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "855204407087",
-    "project_id": "rdp-todolist-584c1",
-    "storage_bucket": "rdp-todolist-584c1.appspot.com"
+    "project_number": "551668721641",
+    "project_id": "polytech-rdp",
+    "storage_bucket": "polytech-rdp.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:855204407087:android:1e76f240764f99bfc5a3da",
+        "mobilesdk_app_id": "1:551668721641:android:523f42cce6bac322660d78",
         "android_client_info": {
-          "package_name": "com.todo.app"
+          "package_name": "com.example.rdp_todolist"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDMVouSNgn9xZNpLf6vFIdxgqFEXhO5aPY"
+          "current_key": "AIzaSyB3gYFdjcc6sJXAnLoabaNGytIJwFdg-Cg"
         }
       ],
       "services": {

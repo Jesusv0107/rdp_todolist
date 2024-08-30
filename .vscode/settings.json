@@ -1,7 +1,8 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.configuration.updateBuildConfiguration": "automatic",
     "files.readonlyInclude": {
         "{**/.c4z/.extsrcs/*.PROTSYM.cbl,**/.c4z/.extsrcs/*.PROTSYM.listing}": true
     },
-    "cmake.sourceDirectory": "C:/Users/ASUS ROG/rdp_todolist/linux/flutter"
+    "cmake.sourceDirectory": "C:/Users/ASUS ROG/rdp_todolist/linux/flutter",
+    "java.compile.nullAnalysis.mode": "automatic"
 }

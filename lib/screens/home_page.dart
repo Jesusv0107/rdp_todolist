@@ -12,24 +12,36 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // Firestore instance for interacting with the Firestore database
   FirebaseFirestore db = FirebaseFirestore.instance;
 
+  // List to store the names of tasks fetched from Firestore
   final List<String> tasks = <String>[];
+
+  // List to track the completion status of each task; initially, all are unchecked (false)
   final List<bool> checkboxes = List.generate(8, (index) => false);
+
+  // Controller for managing the text input field where users enter new tasks
   TextEditingController nameController = TextEditingController();
 
+  // Placeholder boolean variable for checkbox state (not used in the current code)
   bool isChecked = false;
 
-  void addItemToList() async {
+  /// Adds a new task to the Firestore database and updates the local UI
+  Future<void> addItemToList() async {
+    // Get the task name from the text input field
     final String taskName = nameController.text;
 
-    if (taskName != '') {
+    // Only add the task if the input is not empty
+    if (taskName.isNotEmpty) {
+      // Add the new task to the Firestore collection with initial completion status set to false
       await db.collection('tasks').add({
         'name': taskName,
         'completed': false,
         'timestamp': FieldValue.serverTimestamp(),
       });
 
+      // Update the local task list and checkbox states to include the new task
       setState(() {
         tasks.insert(0, taskName);
         checkboxes.insert(0, false);
@@ -37,76 +49,77 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void removeItems(int index) async {
-    //Get the tasks to be removed
+  /// Removes a task from the Firestore database and updates the local UI
+  Future<void> removeItems(int index) async {
+    // Get the task to be removed based on its index
     String taskToBeRemoved = tasks[index];
 
-    //Remove the task from Firestore
+    // Query Firestore to find the task with the given name
     QuerySnapshot querySnapshot = await db
         .collection('tasks')
         .where('name', isEqualTo: taskToBeRemoved)
         .get();
 
+    // If a matching document is found, delete it
     if (querySnapshot.size > 0) {
       DocumentSnapshot documentSnapshot = querySnapshot.docs[0];
-
       await documentSnapshot.reference.delete();
     }
 
+    // Update the local task list and checkbox states to reflect the removal
     setState(() {
       tasks.removeAt(index);
       checkboxes.removeAt(index);
     });
   }
 
+  /// Fetches tasks from Firestore and updates the local task list
   Future<void> fetchTasksFromFirestore() async {
-    //Get a reference to the 'tasks' collection from Firestore
+    // Reference to the 'tasks' collection in Firestore
     CollectionReference tasksCollection = db.collection('tasks');
 
-    //Fetch the documents (tasks) from the collection
+    // Fetch the documents (tasks) from the collection
     QuerySnapshot querySnapshot = await tasksCollection.get();
 
-    //Create an empty list to store the fetched task names
+    // List to store the names of the fetched tasks
     List<String> fetchedTasks = [];
 
-    //Look through each doc (task) in the querySnapshot object
+    // Iterate over each document in the query snapshot
     for (QueryDocumentSnapshot docSnapshot in querySnapshot.docs) {
-      //Get the task name from the data
+      // Get the task name and completion status from the document
       String taskName = docSnapshot.get('name');
-
-      //Get the completion status from the data
       bool completed = docSnapshot.get('completed');
 
-      //Add the tasks to the fetched tasks
+      // Add the task name to the list of fetched tasks
       fetchedTasks.add(taskName);
     }
+
+    // Update the local task list with the fetched tasks
     setState(() {
       tasks.clear();
       tasks.addAll(fetchedTasks);
     });
   }
 
+  /// Updates the completion status of a task in Firestore and the local state
   Future<void> updateTaskCompletionStatus(
       String taskName, bool completed) async {
-    //Get a reference to the 'tasks' collection from Firestore
+    // Reference to the 'tasks' collection in Firestore
     CollectionReference tasksCollection = db.collection('tasks');
 
-    //Query firestore for tasks with the given task name
+    // Query Firestore for tasks with the given name
     QuerySnapshot querySnapshot =
         await tasksCollection.where('name', isEqualTo: taskName).get();
 
-    //if matching documents is found
+    // If a matching document is found, update its completion status
     if (querySnapshot.size > 0) {
-      //Getting a reference to the first matching document
       DocumentSnapshot documentSnapshot = querySnapshot.docs[0];
-
       await documentSnapshot.reference.update({'completed': completed});
     }
-    setState(() {
-      //find the index of the task in the task list
-      int taskIndex = tasks.indexWhere((task) => task == taskName);
 
-      //Update the corresponding checkbox value in the cleckbox list
+    // Update the local checkbox state to reflect the completion status
+    setState(() {
+      int taskIndex = tasks.indexWhere((task) => task == taskName);
       checkboxes[taskIndex] = completed;
     });
   }
@@ -114,9 +127,11 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    // Fetch tasks from Firestore when the widget is initialized
     fetchTasksFromFirestore();
   }
 
+  /// Clears the input text field
   void clearInput() {
     setState(() {
       nameController.clear();
@@ -149,6 +164,7 @@ class _HomePageState extends State<HomePage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // Calendar widget for selecting dates
               TableCalendar(
                 calendarFormat: CalendarFormat.month,
                 headerVisible: true,
@@ -173,7 +189,6 @@ class _HomePageState extends State<HomePage> {
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: Row(
-                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(
                               size: 44,
@@ -202,9 +217,11 @@ class _HomePageState extends State<HomePage> {
                                   child: Checkbox(
                                       value: checkboxes[index],
                                       onChanged: (newValue) {
+                                        // Update checkbox state and Firestore
                                         setState(() {
                                           checkboxes[index] = newValue!;
                                         });
+                                        // Update the task's completion status in Firestore
                                         updateTaskCompletionStatus(
                                             tasks[index], newValue!);
                                       }),
@@ -214,6 +231,7 @@ class _HomePageState extends State<HomePage> {
                                   iconSize: 30,
                                   icon: Icon(Icons.delete),
                                   onPressed: () {
+                                    // Remove the task from the list and Firestore
                                     removeItems(index);
                                   },
                                 ),
@@ -254,8 +272,10 @@ class _HomePageState extends State<HomePage> {
                   ),
                   IconButton(
                     icon: Icon(Icons.clear),
-                    onPressed: null,
-                    //To-Do clearTextField()
+                    onPressed: () {
+                      // Clear the input text field
+                      clearInput();
+                    },
                   ),
                 ],
               ),
@@ -263,6 +283,7 @@ class _HomePageState extends State<HomePage> {
                 padding: EdgeInsets.all(4.0),
                 child: ElevatedButton(
                   onPressed: () {
+                    // Add new task to the list and clear the input field
                     addItemToList();
                     clearInput();
                   },
